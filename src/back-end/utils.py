@@ -2,6 +2,8 @@ from collections import defaultdict
 
 import numpy as np
 import DBAdapter as db
+import uuid
+import base64
 
 def join_encoding_vec(list1, list2, total_size):
     vec = [0] * total_size
@@ -56,3 +58,14 @@ def create_filter_mask_group(conn, users, r_count):
 
 def create_filter_mask(conn, user, r_count):
     return create_filter_mask_group(conn, [user], r_count)
+
+
+def generate_url_safe_uuid():
+    random_uuid = uuid.uuid4()
+    uuid_bytes = random_uuid.bytes
+    url_safe_uuid = base64.urlsafe_b64encode(uuid_bytes).rstrip(b'=')
+    return url_safe_uuid.decode('utf-8')
+
+
+def flatten_list(nested_list):
+    return [item for sublist in nested_list for item in sublist]
