@@ -5,11 +5,6 @@ import DBAccess as DBA
 
 def get_recipes_for_user(conn, user_id):
     try:
-        # Fetch the user's allergies
-        user_allergies_query = f"SELECT allergy_id FROM public.user_allergies WHERE user_id = {user_id};"
-        user_allergies = DBA.fetch_data(conn, user_allergies_query)
-
-        # Fetch user's liked tags
         user_liked_tags_query = f"SELECT tag_id FROM public.likedtags WHERE user_id = {user_id};"
         user_liked_tags = DBA.fetch_data(conn, user_liked_tags_query)
 
@@ -17,17 +12,15 @@ def get_recipes_for_user(conn, user_id):
         recipe_query = f"""
                 SELECT DISTINCT r.id, r.image_link, r.name, r.skill
                 FROM public.recipes r
-                JOIN public.recipe_ingredients ri ON r.id = ri.recipe_id
-                JOIN public.recipe_tags rt ON r.id = rt.recipe_id
-                WHERE NOT EXISTS (
-                    SELECT 1
+                WHERE NOT exists(
+                    SELECT *
                     FROM public.user_allergies ua
-                    WHERE ua.user_id = {user_id}
-                    AND ua.allergy_id = ANY(ARRAY(SELECT ingredient_id FROM public.recipe_ingredients WHERE recipe_id = r.id))
+                    JOIN public.allergy_ingredients ai on ai.allergy_id = ua.allergy_id
+                    JOIN public.recipe_ingredients ri on ri.ingredient_id = ai.ingredient_id
+                    WHERE ua.user_id = {user_id} and r.id = ri.recipe_id
                 )
-                AND (rt.tag_id = ANY(ARRAY(SELECT tag_id FROM public.likedtags WHERE user_id = {user_id})) OR rt.tag_id IS NULL)
-                {"AND rt.tag_id = 'Vegan'" if ('Vegan',) in user_liked_tags else ""}
-                ;
+                {"AND exists(select * FROM public.tags t JOIN public.recipe_tags rt on rt.tag_id = t.id WHERE t.name = 'Vegan' and rt.recipe_id = r.id)" if ('Vegan',) in user_liked_tags else ""}
+                ORDER BY r.id;
             """
         recipes = DBA.fetch_data(conn, recipe_query)
         return recipes
