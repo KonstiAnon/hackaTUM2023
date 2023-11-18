@@ -29,8 +29,8 @@ def get_recipes_for_user(conn, user_id):
         print("Error fetching recipes:", e)
     return None
 
-def set_allergies_for_user(user_id, allergies):
-    conn = DBA.connect_to_db()
+
+def set_allergies_for_user(conn, user_id, allergies):
     try:
         # Delete user's allergies
         delete_query = f"DELETE FROM public.user_allergies WHERE user_id = {user_id};"
@@ -48,9 +48,41 @@ def set_allergies_for_user(user_id, allergies):
     except psycopg2.Error as e:
         print("Error setting allergies:", e)
         return False
-    finally:
-        DBA.close_connection(conn)
     return True
+
+
+def insert_user(conn, name, pw):
+    try:
+        query = f"INSERT INTO public.users (name, pw) VALUES ('{name}', '{pw}')"
+        DBA.execute_query(conn, query)
+        print(f"User '{name}' inserted successfully")
+    except Exception as error:
+        print(f"Error inserting user: {error}")
+
+
+def load_all_users(conn):
+    try:
+        query = "SELECT * FROM public.users"
+        users = DBA.fetch_data(conn, query)
+        return users
+    except Exception as error:
+        print(f"Error loading users: {error}")
+        return None
+
+
+def get_user_id(conn, name, pw):
+    try:
+        query = f"SELECT id FROM public.users WHERE name = '{name}' AND pw = '{pw}'"
+        result = DBA.fetch_data(conn, query)
+        if result:
+            return result[0][0]  # Assuming the first column is the user ID
+        else:
+            print(f"No user found with name '{name}' and password '{pw}'")
+            return None
+    except Exception as error:
+        print(f"Error getting user ID: {error}")
+        return None
+
 
 if __name__ == '__main__':
     conn = DBA.connect_to_db()
