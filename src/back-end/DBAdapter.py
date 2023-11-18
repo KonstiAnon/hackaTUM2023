@@ -36,6 +36,29 @@ def get_recipes_for_user(conn, user_id):
         print("Error fetching recipes:", e)
     return None
 
+def set_allergies_for_user(user_id, allergies):
+    conn = DBA.connect_to_db()
+    try:
+        # Delete user's allergies
+        delete_query = f"DELETE FROM public.user_allergies WHERE user_id = {user_id};"
+        DBA.execute_query(conn, delete_query)
+
+        # Insert new allergies
+        insert_query = f"INSERT INTO public.user_allergies (user_id, allergy_id) VALUES "
+        for i, allergy in enumerate(allergies):
+            insert_query += f"({user_id}, {allergy})"
+            if i < len(allergies) - 1:
+                insert_query += ", "
+        insert_query += ";"
+        DBA.execute_query(conn, insert_query)
+
+    except psycopg2.Error as e:
+        print("Error setting allergies:", e)
+        return False
+    finally:
+        DBA.close_connection(conn)
+    return True
+
 if __name__ == '__main__':
     conn = DBA.connect_to_db()
     get_recipes_for_user(conn, 2)
