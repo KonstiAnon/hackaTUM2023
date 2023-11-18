@@ -11,6 +11,13 @@ conn = dba.connect_to_db()
 active_groups = {} # map of UUID map of user-ids to obj of selections of all users, will be moved to processed order once all have voted
 
 def generate_prediction(user_likes, user_dislikes, user_id):
+    """
+    Generates a list of recipe ids, which the user might like
+    :param user_likes: list of recipe ids the user likes
+    :param user_dislikes: list of recipe ids the user dislikes
+    :param user_id: user id
+    :return: list of recipe ids to suggest to user
+    """
     recipes = db.get_recipes(conn)
     r_count = len(recipes)
 
@@ -23,6 +30,12 @@ def generate_prediction(user_likes, user_dislikes, user_id):
 
 
 def generate_group_prediction(user_ids, suggestions_per_group=2, group_size=4):
+    """
+    Generates a list of recipe ids, which the user might like
+    :param user_ids: list of user ids
+    :param suggestions_per_group: number of suggestions per group
+    :param group_size: number of users per group
+    """
     recipes = db.get_recipes(conn)
     r_count = len(recipes)
 
@@ -136,6 +149,11 @@ def create_user():
 
 @app.route('/setPreferences', methods=['POST'])
 def setPreferences():
+    """
+    Set the preferences (allergies) for a user
+    :param user_id: user id
+    :param allergies: list of allergies (ids)
+    """
     data = request.get_json()
     user_id = data['user_id']
     allergies = data['allergies']
@@ -145,6 +163,11 @@ def setPreferences():
 
 @app.route('/favorRecipe', methods=['POST'])
 def favorRecipe():
+    """
+    This endpoint lets a user add a like to a recipe 
+    :param user_id: user id
+    :param recipe_id: recipe id
+    """
     data = request.get_json()
     user_id = data['user_id']
     recipe_id = data['recipe_id']
@@ -161,6 +184,12 @@ def get_users():
 
 @app.route('/get-user', methods=['GET'])
 def getUser():
+    """
+    This endpoint is a simple mock endpoint to facilitate account management
+    :param user_id: user id
+    :param user_pw: user password
+    :return: user id
+    """
     data = request.get_json()
     user_name = data['user_name']
     user_pw = data['user_pw']
@@ -170,6 +199,12 @@ def getUser():
 
 @app.route('/set-user', methods=['POST'])
 def set_user():
+    """
+    This endpoint is used to mock user account creation
+    :param user_name: user name
+    :param user_pw: user password
+    :return: status incicating if creating was successful
+    """
     # Check if the request has JSON data
     if not request.is_json:
         return jsonify({"error": "Missing JSON in request"}), 400
