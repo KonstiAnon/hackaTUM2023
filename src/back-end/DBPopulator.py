@@ -23,6 +23,10 @@ def flatten_list(nested_list):
             (flatten_list(sublist) if isinstance(sublist, list) else [sublist])]
 
 
+def flip_bidirectional_map(bidirectional_map):
+    return {value: key for key, value in bidirectional_map.items()}
+
+
 def populate_db():
     # Connect to the database
     conn = DBA.connect_to_db()
@@ -44,15 +48,42 @@ def populate_db():
         SELECT a.id, a.hf_id
         FROM public.allergies a
     """))
+    allg_hf_id_2_id = flip_bidirectional_map(allg_id_2_hf_id)
+
     ingredients = make_list_unique(flatten_list([r['ingredients'] for r in recipes]), 'id')
+    ing_id_2_hf_id = {}
     for ing in ingredients:
         recipe_query = """
-                INSERT INTO public.allergy_ingredients (hf_id, image_link, name, skill)
-                VALUES (%s, %s, %s, %s) RETURNING id;
+                INSERT INTO public.ingredients (hf_id, name)
+                VALUES (%s, %s) RETURNING id;
                 """
-        cursor.execute(recipe_query, (recipe['id'], recipe['imageLink'], recipe['name'], recipe['difficulty']))
+        cursor.execute(recipe_query, (ing['id'], ing['name']))
         recipe_id = cursor.fetchone()[0]
+        ing_id_2_hf_id[recipe_id] = ing['id']
+    ing_hf_id_2_id = flip_bidirectional_map(ing_id_2_hf_id)
+
     ingredients = [item for item in ingredients if item.get("allergens") != []]
+    for ing in ingredients:
+        for alg in ing['allergens']:
+            recipe_query = """
+                            INSERT INTO public.allergy_ingredients (allergy_id, ingredient_id)
+                            VALUES (%s, %s);
+                            """
+            cursor.execute(recipe_query, (allg_hf_id_2_id[alg], ing_hf_id_2_id[ing['id']]))
+    conn.commit()
+
+    tag_hf_id_2_id = {}
+    tags = make_list_unique(flatten_list([r['tags'] for r in recipes]), 'id')
+    for tag in tags:
+        recipe_query = """
+                        INSERT INTO public.tags (hf_id, name)
+                        VALUES (%s, %s) RETURNING id;
+                        """
+        cursor.execute(recipe_query, (tag['id'], tag['name']))
+        tag_id = cursor.fetchone()[0]
+        tag_hf_id_2_id[tag['id']] = tag_id
+    conn.commit()
+
     # Assuming the file contains a list of recipes
     for recipe in recipes:
         # Insert the recipe into the recipes table
@@ -63,21 +94,22 @@ def populate_db():
         cursor.execute(recipe_query, (recipe['id'], recipe['imageLink'], recipe['name'], recipe['difficulty']))
         recipe_id = cursor.fetchone()[0]
 
+        for tag in recipe['tags']:
+            query = """
+                INSERT INTO public.recipe_tags (recipe_id, tag_id)
+                VALUES (%s, %s);
+            """
+            cursor.execute(query, (recipe_id, tag_hf_id_2_id[tag['id']]))
+
         # Insert ingredients and their relationship with recipes
         for ingredient in recipe['ingredients']:
-            ingredient_query = """
-            INSERT INTO public.ingredients (hf_id, name)
-            VALUES (%s, %s) RETURNING id;
-            """
-            cursor.execute(ingredient_query, (ingredient['id'], ingredient['name']))
-            ingredient_id = cursor.fetchone()[0]
-
             recipe_ingredients_query = """
             INSERT INTO public.recipe_ingredients (recipe_id, ingredient_id, amount, unit)
             VALUES (%s, %s, %s, %s);
             """
             cursor.execute(recipe_ingredients_query,
-                           (recipe_id, ingredient_id, ingredient.get('amount', 1), ingredient.get('unit', ' ')))
+                           (recipe_id, ing_hf_id_2_id[ingredient['id']], ingredient.get('amount', 1),
+                            ingredient.get('unit', ' ')))
 
         # Commit the transaction
         conn.commit()
