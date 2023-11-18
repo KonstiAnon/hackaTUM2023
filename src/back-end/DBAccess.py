@@ -5,11 +5,11 @@ def connect_to_db():
     try:
         # Modify these parameters according to your PostgreSQL setup
         conn = psycopg2.connect(
-            user="your_username",
-            password="your_password",
-            host="your_db_host",
-            port="your_db_port",
-            database="your_db_name"
+            user="postgres",
+            password="hellofresh",
+            host="localhost",
+            port="5432",
+            database="hellofresh"
         )
         return conn
     except (Exception, psycopg2.Error) as error:

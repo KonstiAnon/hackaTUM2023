@@ -8,7 +8,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/fetchRecipies')
+@app.route('/fetch-recipies')
 def fetchRecipies():
     return 'fetch recipies'
 
@@ -23,12 +23,12 @@ def favorRecipe():
     return 'fav recipe'
 
 
-@app.route('/getUser')
+@app.route('/get-user')
 def getUser():
     return "get user"
 
 
-@app.route('/setUser')
+@app.route('/set-user')
 def set_user():
     return "set user"
 
