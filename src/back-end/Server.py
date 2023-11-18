@@ -3,20 +3,21 @@ import DBAccess as dba
 import DBAdapter as db
 import json
 
-app = Flask(__name__, template_folder='../front-end', static_folder='../front-end/static')
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 conn = dba.connect_to_db()
 
-@app.route('/')
+
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
 
-@app.route('/fetch-recipies')
+@app.route('/fetch-recipies', methods=['GET'])
 def fetchRecipies():
     return 'fetch recipies'
 
 
-@app.route('/setPreferences')
+@app.route('/setPreferences', methods=['POST'])
 def setPreferences():
     data = request.get_json()
     user_id = data['user_id']
@@ -25,7 +26,7 @@ def setPreferences():
     return 'set prefs'
 
 
-@app.route('/favorRecipe')
+@app.route('/favorRecipe', methods=['POST'])
 def favorRecipe():
     data = request.get_json()
     user_id = data['user_id']
@@ -34,7 +35,7 @@ def favorRecipe():
     return 'fav recipe'
 
 
-@app.route('/get-user')
+@app.route('/get-user', methods=['GET'])
 def getUser():
     data = request.get_json()
     user_name = data['user_name']
@@ -43,7 +44,7 @@ def getUser():
     return json.dumps({'user_id': user_id})
 
 
-@app.route('/set-user')
+@app.route('/set-user', methods=['POST'])
 def set_user():
     data = request.get_json()
     user_name = data['user_name']
