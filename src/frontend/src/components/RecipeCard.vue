@@ -43,7 +43,7 @@ const flip = () => {
 <style lang="sass" scoped>
 .recipe-card
   width: 100%
-  max-width: 317px
+  width: 317px
   border-radius: 5px
 
 ::v-deep .back-image
