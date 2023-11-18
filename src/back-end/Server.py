@@ -5,6 +5,7 @@ import json
 import numpy as np
 from collections import defaultdict
 from Prediction import predict
+from utils import *
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 conn = dba.connect_to_db()
@@ -14,42 +15,39 @@ def generate_prediction(user_likes, user_dislikes, user_id):
     recipes = db.get_recipes(conn)
     r_count = len(recipes)
 
-    likes = db.get_likes(conn)
-    grouped_data = defaultdict(list)
-    for user_id, recipe_id in likes:
-        grouped_data[user_id].append(recipe_id)
-    likes_per_user = list(grouped_data.values())
-    del grouped_data
-    dislikes = db.get_dislikes(conn)
-    grouped_data = defaultdict(list)
-    for user_id, recipe_id in dislikes:
-        grouped_data[user_id].append(recipe_id)
-    dislikes_per_user = list(grouped_data.values())
+    mat = create_pref_mat(conn, r_count)
+    user_vec = np.array(join_encoding_vec(user_likes, user_dislikes, r_count))
 
-    def join_encoding(list1, list2, total_size):
-        result = []
-        for l1, l2 in zip(list1, list2):
-            encoding = [0] * total_size
-            for idx in l1:
-                encoding[idx] = 1
-            for idx in l2:
-                encoding[idx] = -1
-            result.append(encoding)
-        return np.array(result)
-    mat = join_encoding(likes_per_user, dislikes_per_user, r_count)
-    user_vec = [0] * r_count
-    for l in user_likes:
-        user_vec[l] = 1
-    for l in user_dislikes:
-        user_vec[l] = -1
-    user_vec = np.array(user_vec)
-
-    user_recipes = db.get_recipes_for_user(conn, user_id)
-    mask = [False] * r_count
-    for rec in user_recipes:
-        mask[rec['id']] = True
-
+    mask = create_filter_mask(conn, user_id, r_count)
+    user_vec = np.reshape(user_vec, (1, -1))
     return predict(mat, user_vec, mask, 8, 4)
+
+
+def generate_group_prediction(user_ids, suggestions_per_group=2, group_size=4):
+    recipes = db.get_recipes(conn)
+    r_count = len(recipes)
+
+    users_vec = {}
+    for user in user_ids:
+        users_vec[user] = np.array(join_encoding_vec(db.get_user_likes(conn, user), db.get_user_dislikes(conn, user), r_count))
+
+    remaining_users = user_ids
+    ids_per_group = []
+    for i in range(group_size):
+        if i == group_size-1:
+            ids_per_group.append(remaining_users)
+            break
+        base_user = remaining_users[0]
+        idx = k_closest_vector_indices(users_vec[base_user], [users_vec[us] for us in remaining_users], group_size+1)
+        ids_per_group.append(remaining_users[idx])
+        remaining_users = [remaining_users[i] for i in range(len(remaining_users)) if i not in idx]
+
+    mat = create_pref_mat(conn, r_count)
+    pred_per_group = []
+    for user_group in ids_per_group:
+        mask = create_filter_mask_group(conn, user_group, r_count)
+        vec = np.mean(np.vstack([users_vec[i] for i in user_group]), axis=0)
+        pred_per_group.append(predict(mat, vec, mask, suggestions_per_group, 4))
 
 
 @app.route('/', methods=['GET'])
@@ -111,5 +109,7 @@ def set_user():
         # Handle any exceptions (e.g., database errors)
         return jsonify({"error": str(e)}), 500
 
+
 if __name__ == '__main__':
     app.run(debug=True)
+

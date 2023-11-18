@@ -9,5 +9,5 @@ def predict(data, user_rating, mask, suggestions=4, neighbors=4):
 
     # returns list of indices for prediction
     predicted_ratings *= mask
-    top_indices = np.argsort(predicted_ratings)[-suggestions:][::-1]
-    return top_indices
+    top_indices = np.argsort(predicted_ratings)[-1, -suggestions::]
+    return top_indices + 1

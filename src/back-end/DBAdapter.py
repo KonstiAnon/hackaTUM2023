@@ -3,9 +3,10 @@ import psycopg2
 import DBAccess as DBA
 
 
-def get_recipes_for_user(conn, user_id):
+def get_recipes_for_users(conn, user_ids):
+    user_ids_str = ', '.join(map(str, user_ids))
     try:
-        user_liked_tags_query = f"SELECT tag_id FROM public.likedtags WHERE user_id = {user_id};"
+        user_liked_tags_query = f"SELECT tag_id FROM public.likedtags WHERE user_id IN ({user_ids_str});"
         user_liked_tags = DBA.fetch_data(conn, user_liked_tags_query)
 
         # Fetch recipes based on user's allergies and liked tags
@@ -17,7 +18,7 @@ def get_recipes_for_user(conn, user_id):
                     FROM public.user_allergies ua
                     JOIN public.allergy_ingredients ai on ai.allergy_id = ua.allergy_id
                     JOIN public.recipe_ingredients ri on ri.ingredient_id = ai.ingredient_id
-                    WHERE ua.user_id = {user_id} and r.id = ri.recipe_id
+                    WHERE ua.user_id IN ({user_ids_str}) and r.id = ri.recipe_id
                 )
                 {"AND exists(select * FROM public.tags t JOIN public.recipe_tags rt on rt.tag_id = t.id WHERE t.name = 'Vegan' and rt.recipe_id = r.id)" if ('Vegan',) in user_liked_tags else ""}
                 ORDER BY r.id;
@@ -33,13 +34,18 @@ def get_recipes_for_user(conn, user_id):
             """
             ingredients = DBA.fetch_data(conn, query)
             tmp = {'name': r_name, 'id': r_id, 'skill': r_skill, 'img': r_img,
-                   'ingredients': [{'id': i_id, 'name': i_name, 'amount': i_am, 'unit': i_u} for (i_id, i_name, i_am, i_u) in ingredients]}
+                   'ingredients': [{'id': i_id, 'name': i_name, 'amount': i_am, 'unit': i_u} for
+                                   (i_id, i_name, i_am, i_u) in ingredients]}
             result.append(tmp)
         return result
-        
+
     except psycopg2.Error as e:
         print("Error fetching recipes:", e)
     return None
+
+
+def get_recipes_for_user(conn, user_id):
+    return get_recipes_for_users(conn, [user_id])
 
 
 def set_allergies_for_user(conn, user_id, allergies):
@@ -132,6 +138,16 @@ def get_user_likes(conn, user_id):
         return data
     except Exception as error:
         print(f"Error retrieving likes")
+        return None
+
+
+def get_user_dislikes(conn, user_id):
+    try:
+        query = f"SELECT l.recipe_id FROM public.disliked_recipes l WHERE l.user_id = {user_id}"
+        data = DBA.fetch_data(conn, query)
+        return data
+    except Exception as error:
+        print(f"Error retrieving dislikes")
         return None
 
 
