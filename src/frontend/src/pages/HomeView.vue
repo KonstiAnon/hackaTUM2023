@@ -1,5 +1,6 @@
 <script setup>
   import ProgressBar from 'src/components/ProgressBar.vue';
+
 </script>
 
 <template>
@@ -22,7 +23,7 @@
     </div>
 </template>
 
-<style >
+<style scoped>
 .page {
   text-align: center;
 }

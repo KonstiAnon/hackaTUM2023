@@ -14,10 +14,9 @@ import BrandHeader from 'src/components/BrandHeader.vue'
 
 export default defineComponent({
   name: 'MainLayout',
-
   components: {
-    BrandHeader
-},
+    BrandHeader,
+  },
 
   setup () {
   }

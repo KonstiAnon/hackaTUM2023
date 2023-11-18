@@ -1,7 +1,7 @@
 <template>
-<label class="card">
+<label class="card row">
     <img :src="this.src" />
-    <input type="checkbox">
+    <input type="radio">
     <div class="text">{{ label }}</div>
 </label>
 </template>
@@ -19,17 +19,17 @@ export default {
 
 <style lang="sass" scoped>
 .card
-    width: 50%
-    max-width: 140px
+    width: 100%
+    height: 60px
     margin: 4px
-    display: block
     padding: 10px 8px 6px 8px
     position: relative
-    border: 1px solid $disabled
+    align-items: center
+    border: 1px solid $secondary
     border-radius: 5px
     text-align: center
     cursor: pointer
-    color: $disabled
+    color: $secondary
     font-size: 18px
 
     input
@@ -40,7 +40,8 @@ export default {
         width: 0
 
     img
-        width: 30px
+        width: 56px
+        height: 28px
         margin: 4px
         filter: saturate(0)
 
