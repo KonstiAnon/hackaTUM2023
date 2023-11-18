@@ -83,6 +83,13 @@ def get_user_id(conn, name, pw):
         print(f"Error getting user ID: {error}")
         return None
 
+def user_add_like(conn, user_id, recipe_id):
+    try:
+        query = f"INSERT INTO public.liked_recipes (user_id, recipe_id) VALUES ({user_id}, {recipe_id})"
+        DBA.execute_query(conn, query)
+        print(f"User '{user_id}' liked recipe '{recipe_id}'")
+    except Exception as error:
+        print(f"Error inserting like: {error}")
 
 if __name__ == '__main__':
     conn = DBA.connect_to_db()
