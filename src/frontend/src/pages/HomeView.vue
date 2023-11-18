@@ -7,7 +7,7 @@
     <div class="page">
       <div class="content absolute-center">
         <img
-          alt="Quasar logo"
+          alt="Logo"
           src="~assets/logo.png"
           style="width: 200px; height: 200px"
         />
@@ -18,7 +18,7 @@
       </div>
     </div>
     <div class="navigation absolute-bottom" >
-        <q-btn round size="17px" color="primary" icon="arrow_right_alt"/>
+        <q-btn round size="17px" color="primary" icon="arrow_right_alt" to="allergies"/>
     </div>
 </template>
 
