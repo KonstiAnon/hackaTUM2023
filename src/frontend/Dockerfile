@@ -4,15 +4,11 @@ RUN corepack enable
 
 WORKDIR /app
 
-COPY package.json .
-COPY pnpm-lock.yaml .
+COPY . ./
 
 RUN pnpm install
-
-COPY . .
-
 RUN pnpm run build
 
 FROM nginx:alpine as run
 
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html/

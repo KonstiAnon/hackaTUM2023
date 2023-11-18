@@ -3,7 +3,6 @@ version: "3.1"
 services:
   db:
     image: postgres:alpine
-    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: hellofresh
@@ -12,5 +11,9 @@ services:
     ports:
     - "5432:5432"
 
+  backend:
+    build: ./src/backend
+    ports:
+      - "5000:5000"
 volumes:
   pgdata:
