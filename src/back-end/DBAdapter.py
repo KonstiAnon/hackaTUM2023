@@ -5,11 +5,6 @@ import DBAccess as DBA
 
 def get_recipes_for_user(conn, user_id):
     try:
-        # Fetch the user's allergies
-        user_allergies_query = f"SELECT allergy_id FROM public.user_allergies WHERE user_id = {user_id};"
-        user_allergies = DBA.fetch_data(conn, user_allergies_query)
-
-        # Fetch user's liked tags
         user_liked_tags_query = f"SELECT tag_id FROM public.likedtags WHERE user_id = {user_id};"
         user_liked_tags = DBA.fetch_data(conn, user_liked_tags_query)
 
@@ -17,17 +12,15 @@ def get_recipes_for_user(conn, user_id):
         recipe_query = f"""
                 SELECT DISTINCT r.id, r.image_link, r.name, r.skill
                 FROM public.recipes r
-                JOIN public.recipe_ingredients ri ON r.id = ri.recipe_id
-                JOIN public.recipe_tags rt ON r.id = rt.recipe_id
-                WHERE NOT EXISTS (
-                    SELECT 1
+                WHERE NOT exists(
+                    SELECT *
                     FROM public.user_allergies ua
-                    WHERE ua.user_id = {user_id}
-                    AND ua.allergy_id = ANY(ARRAY(SELECT ingredient_id FROM public.recipe_ingredients WHERE recipe_id = r.id))
+                    JOIN public.allergy_ingredients ai on ai.allergy_id = ua.allergy_id
+                    JOIN public.recipe_ingredients ri on ri.ingredient_id = ai.ingredient_id
+                    WHERE ua.user_id = {user_id} and r.id = ri.recipe_id
                 )
-                AND (rt.tag_id = ANY(ARRAY(SELECT tag_id FROM public.likedtags WHERE user_id = {user_id})) OR rt.tag_id IS NULL)
-                {"AND rt.tag_id = 'Vegan'" if ('Vegan',) in user_liked_tags else ""}
-                ;
+                {"AND exists(select * FROM public.tags t JOIN public.recipe_tags rt on rt.tag_id = t.id WHERE t.name = 'Vegan' and rt.recipe_id = r.id)" if ('Vegan',) in user_liked_tags else ""}
+                ORDER BY r.id;
             """
         recipes = DBA.fetch_data(conn, recipe_query)
         return recipes
@@ -36,8 +29,8 @@ def get_recipes_for_user(conn, user_id):
         print("Error fetching recipes:", e)
     return None
 
-def set_allergies_for_user(user_id, allergies):
-    conn = DBA.connect_to_db()
+
+def set_allergies_for_user(conn, user_id, allergies):
     try:
         # Delete user's allergies
         delete_query = f"DELETE FROM public.user_allergies WHERE user_id = {user_id};"
@@ -55,9 +48,48 @@ def set_allergies_for_user(user_id, allergies):
     except psycopg2.Error as e:
         print("Error setting allergies:", e)
         return False
-    finally:
-        DBA.close_connection(conn)
     return True
+
+
+def insert_user(conn, name, pw):
+    try:
+        query = f"INSERT INTO public.users (name, pw) VALUES ('{name}', '{pw}')"
+        DBA.execute_query(conn, query)
+        print(f"User '{name}' inserted successfully")
+    except Exception as error:
+        print(f"Error inserting user: {error}")
+
+
+def load_all_users(conn):
+    try:
+        query = "SELECT * FROM public.users"
+        users = DBA.fetch_data(conn, query)
+        return users
+    except Exception as error:
+        print(f"Error loading users: {error}")
+        return None
+
+
+def get_user_id(conn, name, pw):
+    try:
+        query = f"SELECT id FROM public.users WHERE name = '{name}' AND pw = '{pw}'"
+        result = DBA.fetch_data(conn, query)
+        if result:
+            return result[0][0]  # Assuming the first column is the user ID
+        else:
+            print(f"No user found with name '{name}' and password '{pw}'")
+            return None
+    except Exception as error:
+        print(f"Error getting user ID: {error}")
+        return None
+
+def user_add_like(conn, user_id, recipe_id):
+    try:
+        query = f"INSERT INTO public.liked_recipes (user_id, recipe_id) VALUES ({user_id}, {recipe_id})"
+        DBA.execute_query(conn, query)
+        print(f"User '{user_id}' liked recipe '{recipe_id}'")
+    except Exception as error:
+        print(f"Error inserting like: {error}")
 
 if __name__ == '__main__':
     conn = DBA.connect_to_db()
