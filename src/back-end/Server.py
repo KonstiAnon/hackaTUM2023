@@ -2,9 +2,54 @@ from flask import Flask, render_template, request, jsonify
 import DBAccess as dba
 import DBAdapter as db
 import json
+import numpy as np
+from collections import defaultdict
+from Prediction import predict
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 conn = dba.connect_to_db()
+
+
+def generate_prediction(user_likes, user_dislikes, user_id):
+    recipes = db.get_recipes(conn)
+    r_count = len(recipes)
+
+    likes = db.get_likes(conn)
+    grouped_data = defaultdict(list)
+    for user_id, recipe_id in likes:
+        grouped_data[user_id].append(recipe_id)
+    likes_per_user = list(grouped_data.values())
+    del grouped_data
+    dislikes = db.get_dislikes(conn)
+    grouped_data = defaultdict(list)
+    for user_id, recipe_id in dislikes:
+        grouped_data[user_id].append(recipe_id)
+    dislikes_per_user = list(grouped_data.values())
+
+    def join_encoding(list1, list2, total_size):
+        result = []
+        for l1, l2 in zip(list1, list2):
+            encoding = [0] * total_size
+            for idx in l1:
+                encoding[idx] = 1
+            for idx in l2:
+                encoding[idx] = -1
+            result.append(encoding)
+        return np.array(result)
+    mat = join_encoding(likes_per_user, dislikes_per_user, r_count)
+    user_vec = [0] * r_count
+    for l in user_likes:
+        user_vec[l] = 1
+    for l in user_dislikes:
+        user_vec[l] = -1
+    user_vec = np.array(user_vec)
+
+    user_recipes = db.get_recipes_for_user(conn, user_id)
+    mask = [False] * r_count
+    for rec in user_recipes:
+        mask[rec['id']] = True
+
+    return predict(mat, user_vec, mask, 8, 4)
 
 
 @app.route('/', methods=['GET'])

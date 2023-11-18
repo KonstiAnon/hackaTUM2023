@@ -97,6 +97,15 @@ def get_user_id(conn, name, pw):
         return None
 
 
+def user_add_dislike(conn, user_id, recipe_id):
+    try:
+        query = f"INSERT INTO public.disliked_recipes (user_id, recipe_id) VALUES ({user_id}, {recipe_id})"
+        DBA.execute_query(conn, query)
+        print(f"User '{user_id}' disliked recipe '{recipe_id}'")
+    except Exception as error:
+        print(f"Error inserting dislike: {error}")
+
+
 def user_add_like(conn, user_id, recipe_id):
     try:
         query = f"INSERT INTO public.liked_recipes (user_id, recipe_id) VALUES ({user_id}, {recipe_id})"
@@ -116,6 +125,16 @@ def get_tags(conn):
         return None
 
 
+def get_user_likes(conn, user_id):
+    try:
+        query = f"SELECT l.recipe_id FROM public.liked_recipes l WHERE l.user_id = {user_id}"
+        data = DBA.fetch_data(conn, query)
+        return data
+    except Exception as error:
+        print(f"Error retrieving likes")
+        return None
+
+
 def get_likes(conn):
     try:
         query = f"SELECT * FROM public.liked_recipes"
@@ -123,6 +142,16 @@ def get_likes(conn):
         return data
     except Exception as error:
         print(f"Error retrieving likes")
+        return None
+
+
+def get_dislikes(conn):
+    try:
+        query = f"SELECT * FROM public.disliked_recipes"
+        data = DBA.fetch_data(conn, query)
+        return data
+    except Exception as error:
+        print(f"Error retrieving dislikes")
         return None
 
 
@@ -143,3 +172,45 @@ def user_add_tag(conn, user_id, tag_id):
         print(f"User '{user_id}' liked recipe '{tag_id}'")
     except Exception as error:
         print(f"Error inserting like: {error}")
+
+
+if __name__ == '__main__':
+    import sqlite3
+
+    conn = sqlite3.connect('../../recommend_collector/recommend.db')
+    cursor = conn.cursor()
+    query = f"""
+        SELECT l.recipe_id, l.user_id 
+        FROM likes l
+        WHERE l.like=1
+    """
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    ids = set([id for (_, id) in rows])
+    mapping = {}
+    i = 1
+    for id in ids:
+       mapping[id] = i
+       i += 1
+
+    query = f"""
+            SELECT l.recipe_id, l.user_id 
+            FROM likes l
+            WHERE l.like=0
+        """
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    conn = DBA.connect_to_db()
+    recs = get_recipes(conn)
+    rec_hf_2_id = {}
+    for id, hf_id, _, _, _ in recs:
+        rec_hf_2_id[hf_id] = id
+
+    for r_id, u_id in rows:
+        user_add_dislike(conn, mapping[u_id], rec_hf_2_id[r_id])
+
+
