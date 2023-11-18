@@ -1,11 +1,11 @@
 <template>
-    <div class="q-pa-md app_view">
-      <router-view/>
-    </div>
+  <div class="app_view">
+    <router-view />
+  </div>
 </template>
 
 <script>
-import {defineComponent} from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'App'
@@ -21,7 +21,9 @@ body
 
 .app_view
   max-width: $max-width
-  min-height: 100vh
+  max-height: $max-height
   display: flex
   margin: auto
+  border-radius: 5px
+  background-color: #fff
 </style>
