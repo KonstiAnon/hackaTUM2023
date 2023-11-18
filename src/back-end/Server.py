@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import DBAccess as dba
 import DBAdapter as db
 import json
@@ -46,12 +46,25 @@ def getUser():
 
 @app.route('/set-user', methods=['POST'])
 def set_user():
-    data = request.get_json()
-    user_name = data['user_name']
-    user_pw = data['user_pw']
-    db.insert_user(conn, user_name, user_pw)
-    return 'set user'
+    # Check if the request has JSON data
+    if not request.is_json:
+        return jsonify({"error": "Missing JSON in request"}), 400
 
+    data = request.get_json()
+
+    # Validate 'user_name' and 'user_pw' in the data
+    user_name = data.get('user_name')
+    user_pw = data.get('user_pw')
+    if not user_name or not user_pw:
+        return jsonify({"error": "Missing username or password"}), 400
+
+    try:
+        # Insert user data into the database
+        db.insert_user(conn, user_name, user_pw)
+        return jsonify({"message": "User set successfully"}), 201
+    except Exception as e:
+        # Handle any exceptions (e.g., database errors)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

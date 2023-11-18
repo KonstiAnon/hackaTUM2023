@@ -58,6 +58,7 @@ def insert_user(conn, name, pw):
         print(f"User '{name}' inserted successfully")
     except Exception as error:
         print(f"Error inserting user: {error}")
+        raise error
 
 
 def load_all_users(conn):
