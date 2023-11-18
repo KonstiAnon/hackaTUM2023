@@ -23,8 +23,20 @@ def get_recipes_for_user(conn, user_id):
                 ORDER BY r.id;
             """
         recipes = DBA.fetch_data(conn, recipe_query)
-        return recipes
-
+        result = []
+        for r_id, r_img, r_name, r_skill in recipes:
+            query = f"""
+                SELECT i.id, i.name, ri.amount, ri.unit
+                FROM public.recipe_ingredients ri
+                JOIN public.ingredients i on i.id = ri.ingredient_id
+                WHERE ri.recipe_id = {r_id}
+            """
+            ingredients = DBA.fetch_data(conn, query)
+            tmp = {'name': r_name, 'id': r_id, 'skill': r_skill, 'img': r_img,
+                   'ingredients': [{'id': i_id, 'name': i_name, 'amount': i_am, 'unit': i_u} for (i_id, i_name, i_am, i_u) in ingredients]}
+            result.append(tmp)
+        return result
+        
     except psycopg2.Error as e:
         print("Error fetching recipes:", e)
     return None
@@ -103,6 +115,26 @@ def get_tags(conn):
         return None
 
 
+def get_likes(conn):
+    try:
+        query = f"SELECT * FROM public.liked_recipes"
+        data = DBA.fetch_data(conn, query)
+        return data
+    except Exception as error:
+        print(f"Error retrieving likes")
+        return None
+
+
+def get_recipes(conn):
+    try:
+        query = f"SELECT * FROM public.recipes"
+        data = DBA.fetch_data(conn, query)
+        return data
+    except Exception as error:
+        print(f"Error retrieving recipes")
+        return None
+
+
 def user_add_tag(conn, user_id, tag_id):
     try:
         query = f"INSERT INTO public.user_tags (user_id, tag_id) VALUES ({user_id}, {tag_id})"
@@ -110,8 +142,3 @@ def user_add_tag(conn, user_id, tag_id):
         print(f"User '{user_id}' liked recipe '{tag_id}'")
     except Exception as error:
         print(f"Error inserting like: {error}")
-
-
-if __name__ == '__main__':
-    conn = DBA.connect_to_db()
-    get_recipes_for_user(conn, 2)
