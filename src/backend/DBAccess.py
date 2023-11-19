@@ -49,35 +49,3 @@ def close_connection(conn):
         conn.close()
         print("PostgreSQL connection is closed")
 
-
-if __name__ == "__main__":
-    # Example usage
-    connection = connect_to_db()
-
-    if connection:
-        # Example query
-        create_table_query = """
-        CREATE TABLE IF NOT EXISTS example_table (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100),
-            age INT
-        );
-        """
-        execute_query(connection, create_table_query)
-
-        # Example insert query
-        insert_data_query = """
-        INSERT INTO example_table (name, age) VALUES ('John Doe', 30);
-        """
-        execute_query(connection, insert_data_query)
-
-        # Example select query
-        select_data_query = "SELECT * FROM example_table;"
-        records = fetch_data(connection, select_data_query)
-
-        if records:
-            print("Data retrieved from the database:")
-            for record in records:
-                print(record)
-
-        close_connection(connection)
