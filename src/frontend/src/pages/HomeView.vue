@@ -1,5 +1,6 @@
 <script setup>
   import ProgressBar from 'src/components/ProgressBar.vue';
+
 </script>
 
 <template>
@@ -18,11 +19,11 @@
       </div>
     </div>
     <div class="navigation absolute-bottom" >
-        <q-btn round size="17px" color="primary" icon="arrow_right_alt" to="allergies"/>
+        <q-btn round size="17px" color="secondary" icon="arrow_right_alt" to="allergies"/>
     </div>
 </template>
 
-<style >
+<style scoped>
 .page {
   text-align: center;
 }
