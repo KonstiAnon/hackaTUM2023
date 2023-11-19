@@ -3,7 +3,6 @@ import Card from "components/RecipeCard.vue";
 import CardStack from "components/CardStack.vue";
 import PageHeader from "src/components/PageHeader.vue";
 import {ref} from "vue";
-import {useRouter} from "vue-router";
 
 const mockData = ref([{
   id: 1,
@@ -49,18 +48,10 @@ const mockData = ref([{
   other: undefined
 }])
 
-const router = useRouter()
-
 
 const decide = (like) => {
   // remove 1st element
   mockData.value.shift()
-
-  console.log(mockData.value.length)
-
-  if (mockData.value.length === 0) {
-    router.push('/discover')
-  }
 }
 
 </script>
