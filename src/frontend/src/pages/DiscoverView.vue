@@ -3,7 +3,7 @@ import Card from "components/RecipeCard.vue";
 import CardStack from "components/CardStack.vue";
 import PageHeader from "src/components/PageHeader.vue";
 import {ref} from "vue";
-import {useRouter} from "vue-router";
+import RecipeCard from "components/RecipeCard.vue";
 
 const mockData = ref([{
   id: 1,
@@ -37,41 +37,23 @@ const mockData = ref([{
   other: undefined
 }])
 
-const router = useRouter()
-
-
-const decide = (like) => {
-  if (mockData.value.length === 1) {
-    router.push('/discover')
-    return
-  }
-
-  // remove 1st element
-  mockData.value.shift()
-}
-
 </script>
 
 <template>
-      <PageHeader header="Matching Time" description="Discover Your Taste Buds' Soulmate!" :progress="0.75">
+      <PageHeader header="Discover Recipes" description="We're sure you'll love those!" :progress="0.75">
         <div class="flex justify-center">
-          <CardStack :recipes="mockData"/>
-          <div class="buttons">
-            <q-btn round size="17px" color="accent" icon="close" @click="decide(false)"/>
-            <q-btn round size="17px" color="secondary" icon="favorite" @click="decide(true)"/>
-          </div>
+          <q-scroll-area class="my-scroll">
+            <RecipeCard v-for="recipe in mockData" :recipe="recipe" :key="recipe.id" class="card"/>
+          </q-scroll-area>
         </div>
     </PageHeader>
 </template>
 
-<style scoped>
+<style lang="sass" scoped>
+.my-scroll
+  width: 100%
+  height: 600px
 
-.q-btn {
-  margin: 20px;
-}
-
-.buttons {
-  margin: 20px;
-  text-align: center;
-}
+.card
+  padding-bottom: 20px
 </style>
