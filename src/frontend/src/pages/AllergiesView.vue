@@ -1,8 +1,8 @@
 <script setup>
-  import ProgressBar from 'src/components/ProgressBar.vue';
   import CardToggle from 'src/components/CardToggle.vue';
   import PageHeader from 'src/components/PageHeader.vue';
 
+    //todo fix this mess in the futur
   import celery from 'src/assets/icons/ic-no-celery.png'
   import nuts from 'src/assets/icons/ic-no-nuts.png'
   import gluten from 'src/assets/icons/icons8-no-gluten-96.png'
@@ -59,8 +59,7 @@
 </script>
 
 <template>
-  <progress-bar />
-    <PageHeader header="Begin Your Quest!" description="Share allergies for a personalized food adventure.">
+    <PageHeader header="Begin Your Quest!" description="Share allergies for a personalized food adventure." :progress="0.25">
         <div class="row justify-center">
             <template v-for="allergie in allergies" :key="allergie.label">
                 <card-toggle :label="allergie.label" :src="allergie.src" />
@@ -68,7 +67,8 @@
         </div>
     </PageHeader>
     <div class="navigation absolute-bottom" >
-        <q-btn round size="17px" color="primary" icon="arrow_right_alt" to="skill"/>
+        <!-- <q-btn round size="17px" color="error" icon="cross" to="skill"/> -->
+        <q-btn round size="17px" color="secondary" icon="arrow_right_alt" to="skill"/>
     </div>
 </template>
 

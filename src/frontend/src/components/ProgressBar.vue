@@ -1,11 +1,20 @@
 <template>
     <div class="progressbar">
-        <q-linear-progress :value="0.2" />
+        <q-linear-progress :value="this.progress" />
     </div>
 </template>
 
-<script setup>
+<script>
+import { defineComponent, ref } from 'vue';
 
+    export default defineComponent({
+        name: 'ProgressBar', 
+        props: {
+            progress: Number
+        },
+        setup () {
+        }
+    })
 </script>
 
 <style lang="sass">
@@ -15,7 +24,6 @@
 .q-linear-progress__model
     background-color: #437849
     &:before
-        content: ' '
         background-image: url('src/assets/logo_wt.png')
         position: absolute
         background-size: 40px 16px

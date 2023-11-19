@@ -9,7 +9,8 @@ export default defineComponent({
     },        
     props: {
         header: String,
-        description: String
+        description: String,
+        progress: Number
     },
     setup () {
     }
@@ -18,7 +19,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <progress-bar />
+  <progress-bar :progress="progress" />
       <div class="content">
         <div class="header">{{ this.header }}</div>
         <div class="description">{{ this.description }}</div>
@@ -37,6 +38,7 @@ export default defineComponent({
 
 .description {
   font-size: 18px;
+  height: 50px;
 }
 
 .content {

@@ -1,6 +1,7 @@
 <script setup>
 import Card from "components/RecipeCard.vue";
 import CardStack from "components/CardStack.vue";
+import PageHeader from "src/components/PageHeader.vue";
 import {ref} from "vue";
 
 const mockData = ref([{
@@ -56,12 +57,13 @@ const decide = (like) => {
 </script>
 
 <template>
-  <div class="absolute-center">
-    <div class="flex justify-center">
-      <CardStack :recipes="mockData"/>
-      <q-btn round size="17px" color="primary" icon="arrow_right_alt" @click="decide(true)"/>
-    </div>
-  </div>
+      <PageHeader header="Matching Time" description="Discover Your Taste Buds' Soulmate!" :progress="0.75">
+        <div class="flex justify-center">
+          <CardStack :recipes="mockData"/>
+          <q-btn round size="17px" color="secondary" icon="favorite" @click="decide(true)"/>
+        </div>
+    </PageHeader>
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>

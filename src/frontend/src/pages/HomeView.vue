@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="navigation absolute-bottom" >
-        <q-btn round size="17px" color="primary" icon="arrow_right_alt" to="allergies"/>
+        <q-btn round size="17px" color="secondary" icon="arrow_right_alt" to="allergies"/>
     </div>
 </template>
 
