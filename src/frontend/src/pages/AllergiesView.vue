@@ -67,7 +67,6 @@
         </div>
     </PageHeader>
     <div class="navigation absolute-bottom" >
-        <!-- <q-btn round size="17px" color="error" icon="cross" to="skill"/> -->
         <q-btn round size="17px" color="secondary" icon="arrow_right_alt" to="skill"/>
     </div>
 </template>

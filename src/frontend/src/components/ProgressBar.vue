@@ -7,6 +7,8 @@
 <script>
 import { defineComponent, ref } from 'vue';
 
+console.log()
+
     export default defineComponent({
         name: 'ProgressBar', 
         props: {

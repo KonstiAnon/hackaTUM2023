@@ -18,9 +18,9 @@
           tailored just for you.</div>
       </div>
     </div>
-    <div class="navigation absolute-bottom" >
-        <q-btn round size="17px" color="secondary" icon="arrow_right_alt" to="allergies"/>
-    </div>
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-btn fab icon="add" color="accent" />
+    </q-page-sticky>
 </template>
 
 <style scoped>

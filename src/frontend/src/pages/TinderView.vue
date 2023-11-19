@@ -60,10 +60,22 @@ const decide = (like) => {
       <PageHeader header="Matching Time" description="Discover Your Taste Buds' Soulmate!" :progress="0.75">
         <div class="flex justify-center">
           <CardStack :recipes="mockData"/>
-          <q-btn round size="17px" color="secondary" icon="favorite" @click="decide(true)"/>
+          <div class="buttons">
+            <q-btn round size="17px" color="accent" icon="close" @click="decide(false)"/>
+            <q-btn round size="17px" color="secondary" icon="favorite" @click="decide(true)"/>
+          </div>
         </div>
     </PageHeader>
 </template>
 
 <style scoped>
+
+.q-btn {
+  margin: 20px;
+}
+
+.buttons {
+  margin: 20px;
+  text-align: center;
+}
 </style>
