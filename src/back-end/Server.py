@@ -6,7 +6,7 @@ import numpy as np
 from Prediction import predict
 from utils import *
 
-app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
+app = Flask(__name__, template_folder='../frontend/simple', static_folder='../frontend/simple/static')
 conn = dba.connect_to_db()
 active_groups = {} # map of UUID map of user-ids to obj of selections of all users, will be moved to processed order once all have voted
 
@@ -80,10 +80,10 @@ def create_group():
         uuid = generate_url_safe_uuid()
         obj = {user_id: {'selected': False, 'selection': ''} for user_id in user_ids}
         active_groups[uuid] = obj
-        return f"{uuid}"
+        return json.dumps({'uuid': uuid})
 
 
-@app.route('/predict', methods=['GET'])
+@app.route('/predict', methods=['POST'])
 def get_prediction():
     data = request.get_json()
     user_id = data['user-id']
@@ -95,7 +95,7 @@ def get_prediction():
     return json.dumps(result)
 
 
-@app.route('/predict/<str:uuid>', methods=['GET'])
+@app.route('/predict/<string:uuid>', methods=['GET'])
 def get_prediction_group(uuid):
     data = request.get_json()
     user_ids = data['user-ids']
@@ -105,7 +105,7 @@ def get_prediction_group(uuid):
     return json.dumps(result)
 
 
-@app.route('/groups/data/<str:uuid>', methods=['GET', 'POST'])
+@app.route('/groups/data/<string:uuid>', methods=['GET', 'POST'])
 def group_data(uuid):
     if uuid not in active_groups.keys():
         return "Page does not exist."
@@ -114,8 +114,8 @@ def group_data(uuid):
         return json.dumps(active_groups.get(uuid, {}))
     else:
         data = request.get_json()
-        user_name = data['user-name']
-        rec_id = data['rec-id']
+        user_name = data['user_name']
+        rec_id = data['rec_id']
         pw = data['pw']
 
         user_id = db.get_user_id(conn, user_name, pw)
@@ -129,7 +129,7 @@ def group_data(uuid):
         return "Operation Successful"
 
 
-@app.route('/groups/<str:uuid>', methods=['GET'])
+@app.route('/groups/<string:uuid>', methods=['GET'])
 def show_group(uuid):
     if uuid in active_groups.keys():
         return render_template("template_group_view.html")
@@ -157,7 +157,7 @@ def setPreferences():
     data = request.get_json()
     user_id = data['user_id']
     allergies = data['allergies']
-    db.set_allergies_for_user(user_id, allergies)
+    db.set_allergies_for_user(conn, user_id, allergies)
     return 'set prefs'
 
 
@@ -182,7 +182,7 @@ def get_users():
     return json.dumps(obj)
 
 
-@app.route('/get-user', methods=['GET'])
+@app.route('/get-user', methods=['POST'])
 def getUser():
     """
     This endpoint is a simple mock endpoint to facilitate account management

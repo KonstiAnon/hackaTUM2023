@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Sign Up</title>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button, input {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Welcome to our Website!</h1>
+
+<button id="loginButton">Login</button>
+<button id="signupButton">Sign Up</button>
+
+<script>
+    // Helper function to get selected allergens
+    function getSelectedAllergens() {
+        var selectedAllergens = [];
+
+        // Loop through allergen checkboxes and add selected ones to the array
+        for (var i = 1; i <= 31; i++) {
+            var allergenCheckbox = document.getElementById('allergen' + i);
+            if (allergenCheckbox.checked) {
+                selectedAllergens.push(i);
+            }
+        }
+
+        return selectedAllergens;
+    }
+
+    // Helper function to generate allergen checkboxes
+    function getAllergenCheckboxes() {
+        var allergenData = [
+            {id: 1, name: 'Weizen'},
+            {id: 2, name: 'Soja'},
+            {id: 3, name: 'Sellerie'},
+            {id: 4, name: 'Senf'},
+            {id: 5, name: 'Eier'},
+            {id: 6, name: 'Milch (einschließlich Laktose)'},
+            {id: 7, name: 'Sellerie'},
+            {id: 8, name: 'Soja'},
+            {id: 9, name: 'kann Spuren von Allergenen enthalten'},
+            {id: 10, name: 'Schwefeldioxide und Sulfite'},
+            {id: 11, name: 'Milch (einschließlich Laktose)'},
+            {id: 12, name: 'Sesamsamen'},
+            {id: 13, name: 'Schwefeldioxide und Sulfite'},
+            {id: 14, name: 'Senf'},
+            {id: 15, name: 'Fisch'},
+            {id: 16, name: 'Schalenfrüchte'},
+            {id: 17, name: 'Pistazien'},
+            {id: 18, name: 'Schalenfrüchte'},
+            {id: 19, name: 'Erdnüsse'},
+            {id: 20, name: 'Glutenhaltiges Getreide'},
+            {id: 21, name: 'Sesamsamen'},
+            {id: 22, name: 'Fisch'},
+            {id: 23, name: 'Mandeln'},
+            {id: 24, name: 'Krebstiere'},
+            {id: 25, name: 'Eier'},
+            {id: 26, name: 'Erdnüsse'},
+            {id: 27, name: 'Gerste'},
+            {id: 28, name: 'Walnüsse'},
+            {id: 29, name: 'Weichtiere (Mollusken)'},
+            {id: 30, name: 'Krebstiere'},
+            {id: 31, name: 'Weizen'}
+        ];
+
+        var checkboxesHTML = '';
+        for (var i = 0; i < allergenData.length; i++) {
+            checkboxesHTML += `
+            <input type="checkbox" id="allergen${allergenData[i].id}" value="${allergenData[i].name}">
+            <label for="allergen${allergenData[i].id}">${allergenData[i].name}</label><br>
+        `;
+        }
+
+        return checkboxesHTML;
+    }
+
+    document.getElementById('signupButton').addEventListener('click', function () {
+        // Remove the buttons
+        document.getElementById('loginButton').style.display = 'none';
+        document.getElementById('signupButton').style.display = 'none';
+
+        // Create and append the signup forms
+        var signupForm1 = document.createElement('form');
+        signupForm1.id = 'signupForm1';
+        signupForm1.innerHTML = `
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required><br>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br>
+            `;
+        document.body.appendChild(signupForm1);
+
+        var signupForm2 = document.createElement('form');
+        signupForm2.id = 'signupForm2';
+        signupForm2.innerHTML = `
+    <label>Select Allergens:</label><br>
+    <div>
+        ${getAllergenCheckboxes()}
+    </div>
+`;
+
+        document.body.appendChild(signupForm2);
+
+        var signupForm3 = document.createElement('form');
+        signupForm3.id = 'signupForm3';
+        signupForm3.innerHTML = `
+                <label for="diet">Select Diet:</label>
+                <select id="diet" name="diet">
+                    <option value="meat">Meat</option>
+                    <option value="fish">Fish</option>
+                    <option value="vegan">Vegan</option>
+                </select><br>
+
+                <button type="button" id="signupSubmit">Submit</button>
+            `;
+        document.body.appendChild(signupForm3);
+
+        // Handle manual form submission
+        document.getElementById('signupSubmit').addEventListener('click', function () {
+            // Get the form data
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Create JSON data with user's selections
+            var dietSelection = document.getElementById('diet').value;
+
+            // Step 1: Create account by posting to /set-user
+            fetch('/set-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({user_name: username, user_pw: password})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Step 2: Get user_id by posting to /get-user
+                    fetch('/get-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({user_name: username, user_pw: password})
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            var user_id = data.user_id;
+
+                            // Step 3: Set user preferences by posting to /setPreferences
+                            var selectedAllergens = getSelectedAllergens();
+                            fetch('/setPreferences', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({user_id: user_id, allergies: selectedAllergens})
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    alert('Sign Up successful! User ID: ' + user_id);
+                                })
+                                .catch(error => {
+                                    alert('Error setting preferences: ' + error.message);
+                                });
+                        })
+                        .catch(error => {
+                            alert('Error getting user ID: ' + error.message);
+                        });
+                })
+                .catch(error => {
+                    alert('Error creating account: ' + error.message);
+                });
+        });
+    });
+
+    document.getElementById('loginButton').addEventListener('click', function () {
+        // Remove the buttons
+        document.getElementById('loginButton').style.display = 'none';
+
+        // Create and append the login form
+        var loginForm = document.createElement('form');
+        loginForm.id = 'loginForm';
+        loginForm.innerHTML = `
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required><br>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required><br>
+
+                <input type="submit" value="Submit">
+            `;
+        document.body.appendChild(loginForm);
+
+        // Intercept the form submission
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get the form data
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Create JSON data
+            var jsonData = JSON.stringify({user_name: username, user_pw: password});
+
+            // Send a custom POST request to /foo with JSON data
+            fetch('/get-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: jsonData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    //alert('Login successful! User ID: ' + data.user_id);
+
+                    // Remove the form
+                    document.getElementById('loginForm').style.display = 'none';
+
+                    // Add buttons for group creation and recipe prediction
+                    var groupCreationButton = document.createElement('button');
+                    groupCreationButton.textContent = 'Create Group';
+                    groupCreationButton.addEventListener('click', function () {
+                        window.location.href = '/create-group';
+                    });
+                    document.body.appendChild(groupCreationButton);
+
+                    //var recipePredictionButton = document.createElement('button');
+                    //recipePredictionButton.textContent = 'Recipe Prediction';
+                    //recipePredictionButton.addEventListener('click', function() {
+                    //    alert('Go to Recipe Prediction'); // Replace with your logic
+                    //});
+                    //document.body.appendChild(recipePredictionButton);
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+        });
+    });
+</script>
+
+</body>
+</html>

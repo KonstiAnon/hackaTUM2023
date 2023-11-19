@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Information</title>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button, input {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            width: 200px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Group Information</h1>
+
+    <div id="groupInfo"></div>
+
+    <h2>Select a Recipe</h2>
+
+    <form id="recipeForm">
+        <!-- Recipe options will be dynamically added here -->
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        // Extract UUID from the URL
+        var uuid = window.location.pathname.split('/').pop();
+
+        // Fetch data from /groups/data/uuid
+        fetch('/groups/data/' + uuid)
+            .then(response => response.json())
+            .then(data => {
+                var groupInfoDiv = document.getElementById('groupInfo');
+                for (var user_id in data) {
+                    var user = data[user_id];
+                    var userInfo = document.createElement('div');
+                    userInfo.textContent = 'User ID: ' + user_id + ', Selected: ' + user.selected + ', Selection: ' + user.selection;
+                    groupInfoDiv.appendChild(userInfo);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching group data:', error.message);
+            });
+
+        // Fetch data from /predict/uuid
+        fetch('/predict/' + uuid)
+            .then(response => response.json())
+            .then(data => {
+                var recipeForm = document.getElementById('recipeForm');
+
+                // Create options for each recipe
+                data.ingredients.forEach(ingredient => {
+                    var option = document.createElement('option');
+                    option.value = ingredient.id;
+                    option.textContent = ingredient.name;
+                    recipeForm.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching prediction data:', error.message);
+            });
+
+        // Intercept form submission
+        document.getElementById('recipeForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get selected recipe ID
+            var selectedRecipeId = document.getElementById('recipeForm').elements['recipe'].value;
+
+            // Get username and password
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Create JSON data
+            var jsonData = JSON.stringify({ rec_id: selectedRecipeId, user_name: username, pw: password });
+
+            // Send a custom POST request to /select-recipe with JSON data
+            fetch('/groups/data/' + uuid, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: jsonData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Recipe selected successfully! Response: ' + (data));
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        });
+    </script>
+
+</body>
+</html>
