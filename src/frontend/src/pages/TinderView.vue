@@ -53,14 +53,13 @@ const router = useRouter()
 
 
 const decide = (like) => {
+  if (mockData.value.length === 1) {
+    router.push('/discover')
+    return
+  }
+
   // remove 1st element
   mockData.value.shift()
-
-  console.log(mockData.value.length)
-
-  if (mockData.value.length === 0) {
-    router.push('/discover')
-  }
 }
 
 </script>
